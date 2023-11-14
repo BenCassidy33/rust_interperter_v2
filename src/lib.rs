@@ -63,6 +63,17 @@ mod tests {
         assert_eq!(expected, res);
     }
 
+    #[test]
+    fn test_read_number() {
+        let mut lex = Lexer::new("123");
+        let expected = Token {
+            token_type: TokenType::INT(123),
+            literal: "123".into(),
+        };
+
+        assert_eq!(expected, lex.next_token());
+    }
+
     fn final_boss() {
         let input = r#"
             let five = 5;

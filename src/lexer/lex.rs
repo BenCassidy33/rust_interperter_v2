@@ -77,19 +77,9 @@ impl Lexer {
             reading_position: 1,
         }
     }
-
-    pub fn read_char(&mut self) {
-        if self.reading_position as usize >= self.input.len() {
-            self.ch = '\0'
-        } else {
-            self.ch = self.input.chars().nth(self.reading_position).unwrap();
-        }
-
-        self.ch_pos = self.reading_position;
-        self.reading_position += 1;
-    }
-
     pub fn next_token(&mut self) -> Token {
+        self.skip_whitespace();
+
         let token: Token = match self.ch {
             '=' => Self::new_token(TokenType::ASSIGN, self.ch),
             ';' => Self::new_token(TokenType::SEMICOLON, self.ch),
@@ -121,10 +111,11 @@ impl Lexer {
                         },
                         literal: lit,
                     }
-                } else if let Ok(dig) = ch.to_string().parse::<isize>() {
+                } else if ch.is_ascii_digit() {
+                    let dig = self.read_number().parse::<isize>().unwrap();
                     Token {
                         token_type: TokenType::INT(dig),
-                        literal: ch.to_string(),
+                        literal: dig.to_string(),
                     }
                 } else {
                     Token {
@@ -147,6 +138,17 @@ impl Lexer {
         }
     }
 
+    pub fn read_char(&mut self) {
+        if self.reading_position as usize >= self.input.len() {
+            self.ch = '\0'
+        } else {
+            self.ch = self.input.chars().nth(self.reading_position).unwrap();
+        }
+
+        self.ch_pos = self.reading_position;
+        self.reading_position += 1;
+    }
+
     pub fn read_ident(&mut self) -> String {
         let pos = self.ch_pos;
 
@@ -156,7 +158,19 @@ impl Lexer {
 
         return self.input.chars().collect::<Vec<char>>()[pos..self.ch_pos]
             .iter()
-            .collect::<String>();
+            .collect();
+    }
+
+    pub fn read_number(&mut self) -> String {
+        let pos = self.ch_pos;
+
+        while self.ch.is_ascii_digit() {
+            self.read_char();
+        }
+
+        return self.input.chars().collect::<Vec<char>>()[pos..self.ch_pos]
+            .iter()
+            .collect();
     }
 
     pub fn determine_kw(ident: &str) -> Option<&TokenType> {
@@ -164,6 +178,12 @@ impl Lexer {
             IDENTS.get(ident)
         } else {
             None
+        }
+    }
+
+    pub fn skip_whitespace(&mut self) {
+        while self.ch.is_ascii_whitespace() {
+            self.read_char();
         }
     }
 }

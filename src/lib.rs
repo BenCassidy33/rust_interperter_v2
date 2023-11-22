@@ -74,6 +74,7 @@ mod tests {
         assert_eq!(expected, lex.next_token());
     }
 
+    #[test]
     fn final_boss() {
         let input = r#"
             let five = 5;
@@ -238,11 +239,10 @@ mod tests {
         ];
 
         let mut lex = Lexer::new(input);
-        let mut actual = Vec::new();
-        for _ in 0..expected.len() {
-            actual.push(lex.next_token());
+        for tok in expected {
+            let tokn = lex.next_token();
+            println!("{:?}", tokn);
+            assert_eq!(tok, tokn);
         }
-
-        assert_eq!(expected, actual);
     }
 }
